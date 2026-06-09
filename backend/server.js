@@ -5,9 +5,18 @@ const cors = require("cors");
 
 const connectDB = require("./config/db");
 
+const {
+  notFound,
+  errorHandler,
+} = require("./middleware/errorMiddleware");
+
+const logger = require("./middleware/logger");
+
 const app = express();
 
-connectDB(); 
+app.use(logger);
+
+connectDB();
 
 app.use(cors());
 app.use(express.json());
@@ -16,10 +25,21 @@ app.get("/", (req, res) => {
     res.send("API is running...");
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    uptime: process.uptime(),
+    timestamp: Date.now(),
+  });
+});
+
 app.use(
   "/api/products",
   require("./routes/productRoutes")
 );
+
+app.use(notFound);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 

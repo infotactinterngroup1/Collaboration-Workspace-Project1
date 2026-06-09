@@ -9,10 +9,22 @@ const {
   deleteProduct,
 } = require("../controllers/productController");
 
-router.route("/")
-  .get(getProducts)
-  .post(createProduct);
+const {
+  createProductValidation,
+} = require("../validators/productValidator");
 
+const validateRequest = require("../middleware/validateRequest");
+
+router.post(
+  "/",
+  createProductValidation,
+  validateRequest,
+  createProduct
+);
+
+router.route("/")
+  .get(getProducts);
+  
 router.route("/:id")
   .get(getProductById)
   .put(updateProduct)
