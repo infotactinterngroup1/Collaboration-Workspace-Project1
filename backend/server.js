@@ -33,6 +33,10 @@ app.get("/health", (req, res) => {
   });
 });
 
+const authRoutes = require('./routes/authRoutes');
+
+app.use('/api/auth', authRoutes);
+
 app.use(
   "/api/products",
   require("./routes/productRoutes")
