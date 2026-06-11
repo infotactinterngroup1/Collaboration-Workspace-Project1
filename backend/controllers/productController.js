@@ -1,112 +1,210 @@
 const asyncHandler = require("express-async-handler");
+
 const Product = require("../models/Product");
 
-/*
-GET /api/products
-Pagination + Search
-*/
-
-const getProducts = asyncHandler(async (req, res) => {
-  const page = Number(req.query.page) || 1;
-  const limit = Number(req.query.limit) || 10;
-
-  const keyword = req.query.search
-    ? {
-        name: {
-          $regex: req.query.search,
-          $options: "i",
-        },
-      }
-    : {};
-
-  const count = await Product.countDocuments(keyword);
-
-  const products = await Product.find(keyword)
-    .skip((page - 1) * limit)
-    .limit(limit);
-
-  res.json({
-    totalProducts: count,
-    currentPage: page,
-    totalPages: Math.ceil(count / limit),
-    products,
-  });
-});
+const {
+  getCache,
+  setCache,
+} = require("../utils/cache");
 
 /*
-GET PRODUCT BY ID
+ GET PRODUCTS
+ CACHE-ASIDE IMPLEMENTATION
 */
+const getProducts = asyncHandler(
+  async (req, res) => {
 
-const getProductById = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id);
+    console.time("Product Query");
+
+    const cacheKey = "products:all";
+
+    const cachedData =
+      await getCache(cacheKey);
+
+    if (cachedData) {
+
+      console.log(
+        "CACHE HIT -> products"
+      );
+
+      console.timeEnd(
+        "Product Query"
+      );
+
+      return res.json(cachedData);
+    }
+
+    console.log(
+      "CACHE MISS -> products"
+    );
+
+    const products =
+      await Product.find();
+
+    await setCache(
+      cacheKey,
+      products,
+      300
+    );
+
+    console.timeEnd(
+      "Product Query"
+    );
+
+    res.json(products);
+  }
+);
+
+/*
+ GET PRODUCT BY ID
+ CACHE-ASIDE IMPLEMENTATION
+*/
+const getProductById =
+asyncHandler(async (req, res) => {
+
+  console.time(
+    "Single Product Query"
+  );
+
+  const cacheKey =
+    `product:${req.params.id}`;
+
+  const cached =
+    await getCache(cacheKey);
+
+  if (cached) {
+
+    console.log(
+      "CACHE HIT -> single product"
+    );
+
+    console.timeEnd(
+      "Single Product Query"
+    );
+
+    return res.json(cached);
+  }
+
+  console.log(
+    "CACHE MISS -> single product"
+  );
+
+  const product =
+    await Product.findById(
+      req.params.id
+    );
 
   if (!product) {
+
     res.status(404);
-    throw new Error("Product not found");
+
+    throw new Error(
+      "Product not found"
+    );
   }
+
+  await setCache(
+    cacheKey,
+    product,
+    300
+  );
+
+  console.timeEnd(
+    "Single Product Query"
+  );
 
   res.json(product);
 });
 
 /*
-CREATE PRODUCT
+ CREATE PRODUCT
 */
+const createProduct =
+asyncHandler(async (req, res) => {
 
-const createProduct = asyncHandler(async (req, res) => {
-  const product = await Product.create(req.body);
+  const product =
+    await Product.create(
+      req.body
+    );
 
   res.status(201).json(product);
 });
 
 /*
-UPDATE PRODUCT
+ UPDATE PRODUCT
 */
+const updateProduct =
+asyncHandler(async (req, res) => {
 
-const updateProduct = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id);
+  const product =
+    await Product.findById(
+      req.params.id
+    );
 
   if (!product) {
+
     res.status(404);
-    throw new Error("Product not found");
+
+    throw new Error(
+      "Product not found"
+    );
   }
 
-  product.name = req.body.name || product.name;
+  product.name =
+    req.body.name ||
+    product.name;
+
   product.description =
-    req.body.description || product.description;
+    req.body.description ||
+    product.description;
 
   product.category =
-    req.body.category || product.category;
+    req.body.category ||
+    product.category;
 
   product.price =
-    req.body.price || product.price;
+    req.body.price ||
+    product.price;
 
   product.stock =
-    req.body.stock || product.stock;
+    req.body.stock ||
+    product.stock;
 
   product.image =
-    req.body.image || product.image;
+    req.body.image ||
+    product.image;
 
-  const updatedProduct = await product.save();
+  const updatedProduct =
+    await product.save();
 
   res.json(updatedProduct);
 });
 
 /*
-DELETE PRODUCT
+ DELETE PRODUCT
 */
+const deleteProduct =
+asyncHandler(async (req, res) => {
 
-const deleteProduct = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id);
+  const product =
+    await Product.findById(
+      req.params.id
+    );
 
   if (!product) {
+
     res.status(404);
-    throw new Error("Product not found");
+
+    throw new Error(
+      "Product not found"
+    );
   }
 
   await product.deleteOne();
 
   res.json({
-    message: "Product deleted successfully",
+    message:
+      "Product deleted successfully",
   });
 });
 
