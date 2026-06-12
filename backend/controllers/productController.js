@@ -5,6 +5,7 @@ const Product = require("../models/Product");
 const {
   getCache,
   setCache,
+  deleteCache,
 } = require("../utils/cache");
 
 /*
@@ -123,9 +124,19 @@ const createProduct =
 asyncHandler(async (req, res) => {
 
   const product =
-    await Product.create(
-      req.body
-    );
+    await Product.create(req.body);
+
+  /*
+   CACHE INVALIDATION
+  */
+
+  await deleteCache(
+    "products:all"
+  );
+
+  console.log(
+    "CACHE INVALIDATED -> products:all"
+  );
 
   res.status(201).json(product);
 });
@@ -142,7 +153,6 @@ asyncHandler(async (req, res) => {
     );
 
   if (!product) {
-
     res.status(404);
 
     throw new Error(
@@ -163,11 +173,11 @@ asyncHandler(async (req, res) => {
     product.category;
 
   product.price =
-    req.body.price ||
+    req.body.price ??
     product.price;
 
   product.stock =
-    req.body.stock ||
+    req.body.stock ??
     product.stock;
 
   product.image =
@@ -176,6 +186,26 @@ asyncHandler(async (req, res) => {
 
   const updatedProduct =
     await product.save();
+
+  /*
+   CACHE INVALIDATION
+  */
+
+  await deleteCache(
+    `product:${req.params.id}`
+  );
+
+  await deleteCache(
+    "products:all"
+  );
+
+  console.log(
+    `CACHE INVALIDATED -> product:${req.params.id}`
+  );
+
+  console.log(
+    "CACHE INVALIDATED -> products:all"
+  );
 
   res.json(updatedProduct);
 });
@@ -201,6 +231,26 @@ asyncHandler(async (req, res) => {
   }
 
   await product.deleteOne();
+
+  /*
+   CACHE INVALIDATION
+  */
+
+  await deleteCache(
+    `product:${req.params.id}`
+  );
+
+  await deleteCache(
+    "products:all"
+  );
+
+  console.log(
+    `CACHE INVALIDATED -> product:${req.params.id}`
+  );
+
+  console.log(
+    "CACHE INVALIDATED -> products:all"
+  );
 
   res.json({
     message:

@@ -79,6 +79,11 @@ app.use(
   require("./routes/authRoutes")
 );
 
+app.use(
+  "/api/analytics",
+  require("./routes/analyticsRoutes")
+);
+
 /*
  ERROR HANDLERS
 */

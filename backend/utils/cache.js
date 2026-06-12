@@ -24,7 +24,12 @@ const setCache = async (
   );
 };
 
+const deleteCache = async (key) => {
+  await redisClient.del(key);
+};
+
 module.exports = {
   getCache,
   setCache,
+  deleteCache,
 };
