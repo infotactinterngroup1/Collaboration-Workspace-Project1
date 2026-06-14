@@ -1,5 +1,4 @@
-const { redisClient } =
-require("../config/redis");
+const { redisClient } = require("../config/redis");
 
 const getCache = async (key) => {
   const data =

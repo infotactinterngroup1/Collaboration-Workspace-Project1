@@ -235,37 +235,45 @@ asyncHandler(async (req, res) => {
 /*
  CREATE PRODUCT
 */
-const createProduct =
-asyncHandler(async (req, res) => {
+const createProduct = asyncHandler(async (req, res) => {
+  const embedding = generateEmbedding(
+    `${req.body.name}
+    ${req.body.description}
+    ${req.body.category}`
+  );
 
-  const product =
-    await Product.create(req.body);
+  const product = await Product.create({
+    name: req.body.name,
+    description: req.body.description,
+    category: req.body.category,
+    price: req.body.price,
+    stock: req.body.stock,
+    image: req.body.image,
+    embedding
+  });
 
   /*
-   CACHE INVALIDATION
+    CACHE INVALIDATION
   */
 
-  await deleteCache(
-    "products:all"
-  );
+  await deleteCache("products:all");
 
   console.log(
     "CACHE INVALIDATED -> products:all"
   );
 
   res.status(201).json(product);
+
 });
 
 /*
  UPDATE PRODUCT
 */
-const updateProduct =
-asyncHandler(async (req, res) => {
+const updateProduct = asyncHandler(async (req, res) => {
 
-  const product =
-    await Product.findById(
-      req.params.id
-    );
+  const product = await Product.findById(
+    req.params.id
+  );
 
   if (!product) {
     res.status(404);
@@ -298,6 +306,17 @@ asyncHandler(async (req, res) => {
   product.image =
     req.body.image ||
     product.image;
+
+  /*
+    REGENERATE EMBEDDING
+  */
+
+  product.embedding =
+    generateEmbedding(
+      `${product.name}
+      ${product.description}
+      ${product.category}`
+    );
 
   const updatedProduct =
     await product.save();

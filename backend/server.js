@@ -89,6 +89,11 @@ app.use(
  require("./routes/cacheRoutes")
 );
 
+app.use(
+ "/api/search",
+ require("./routes/searchRoutes")
+);
+
 /*
  ERROR HANDLERS
 */

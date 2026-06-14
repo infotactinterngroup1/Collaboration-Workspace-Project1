@@ -27,6 +27,11 @@ const productSchema = new mongoose.Schema(
 
     image: {
       type: String
+    },
+
+    embedding: {
+      type: [Number],
+      default: []
     }
   },
   {
