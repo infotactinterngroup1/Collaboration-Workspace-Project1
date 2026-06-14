@@ -84,6 +84,11 @@ app.use(
   require("./routes/analyticsRoutes")
 );
 
+app.use(
+ "/api/cache",
+ require("./routes/cacheRoutes")
+);
+
 /*
  ERROR HANDLERS
 */

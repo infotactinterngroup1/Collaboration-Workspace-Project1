@@ -12,49 +12,164 @@ const {
  GET PRODUCTS
  CACHE-ASIDE IMPLEMENTATION
 */
-const getProducts = asyncHandler(
-  async (req, res) => {
+const getProducts =
+asyncHandler(async (req, res) => {
 
-    console.time("Product Query");
+  console.time("Product Query");
 
-    const cacheKey = "products:all";
+  const page =
+    Number(req.query.page) || 1;
 
-    const cachedData =
-      await getCache(cacheKey);
+  const limit =
+    Number(req.query.limit) || 10;
 
-    if (cachedData) {
+  const keyword =
+    req.query.search
+      ? {
+          name: {
+            $regex:
+              req.query.search,
 
-      console.log(
-        "CACHE HIT -> products"
-      );
+            $options: "i",
+          },
+        }
+      : {};
 
-      console.timeEnd(
-        "Product Query"
-      );
+  const category =
+    req.query.category
+      ? {
+          category:
+            req.query.category,
+        }
+      : {};
 
-      return res.json(cachedData);
-    }
+  const priceFilter = {};
+
+  if (req.query.minPrice) {
+
+    priceFilter.price = {
+      ...priceFilter.price,
+
+      $gte:
+        Number(
+          req.query.minPrice
+        ),
+    };
+  }
+
+  if (req.query.maxPrice) {
+
+    priceFilter.price = {
+      ...priceFilter.price,
+
+      $lte:
+        Number(
+          req.query.maxPrice
+        ),
+    };
+  }
+
+  const filters = {
+    ...keyword,
+    ...category,
+    ...priceFilter,
+  };
+
+  let sort = {};
+
+  switch (req.query.sort) {
+
+    case "priceAsc":
+
+      sort.price = 1;
+
+      break;
+
+    case "priceDesc":
+
+      sort.price = -1;
+
+      break;
+
+    case "latest":
+
+      sort.createdAt = -1;
+
+      break;
+
+    default:
+
+      sort.createdAt = -1;
+  }
+
+  const cacheKey =
+    `products:${JSON.stringify(
+      req.query
+    )}`;
+
+  const cached =
+    await getCache(cacheKey);
+
+  if (cached) {
 
     console.log(
-      "CACHE MISS -> products"
-    );
-
-    const products =
-      await Product.find();
-
-    await setCache(
-      cacheKey,
-      products,
-      300
+      "CACHE HIT -> Filtered Products"
     );
 
     console.timeEnd(
       "Product Query"
     );
 
-    res.json(products);
+    return res.json(cached);
   }
-);
+
+  console.log(
+    "CACHE MISS -> Filtered Products"
+  );
+
+  const count =
+    await Product.countDocuments(
+      filters
+    );
+
+  const products =
+    await Product.find(filters)
+
+      .sort(sort)
+
+      .skip(
+        (page - 1) * limit
+      )
+
+      .limit(limit);
+
+  const response = {
+
+    totalProducts: count,
+
+    currentPage: page,
+
+    totalPages:
+      Math.ceil(
+        count / limit
+      ),
+
+    products,
+  };
+
+  await setCache(
+    cacheKey,
+    response,
+    300
+  );
+
+  console.timeEnd(
+    "Product Query"
+  );
+
+  res.json(response);
+
+});
 
 /*
  GET PRODUCT BY ID
@@ -258,10 +373,54 @@ asyncHandler(async (req, res) => {
   });
 });
 
+/* Trending Products */
+
+const getTrendingProducts =
+asyncHandler(async (req, res) => {
+
+  const cacheKey =
+    "products:trending";
+
+  const cached =
+    await getCache(cacheKey);
+
+  if (cached) {
+
+    console.log(
+      "CACHE HIT -> Trending"
+    );
+
+    return res.json(cached);
+  }
+
+  console.log(
+    "CACHE MISS -> Trending"
+  );
+
+  const products =
+    await Product.find()
+
+      .sort({
+        stock: -1,
+      })
+
+      .limit(5);
+
+  await setCache(
+    cacheKey,
+    products,
+    300
+  );
+
+  res.json(products);
+
+});
+
 module.exports = {
   getProducts,
   getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
+  getTrendingProducts
 };

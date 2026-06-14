@@ -7,6 +7,7 @@ const {
   createProduct,
   updateProduct,
   deleteProduct,
+  getTrendingProducts
 } = require("../controllers/productController");
 
 const {
@@ -28,6 +29,12 @@ const validateRequest = require(
 
 // GET /api/products
 router.get("/", getProducts);
+
+// GET /api/products/trending
+router.get(
+  "/trending",
+  getTrendingProducts
+);
 
 // GET /api/products/:id
 router.get("/:id", getProductById);
