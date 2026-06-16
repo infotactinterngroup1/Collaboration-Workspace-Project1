@@ -94,6 +94,11 @@ app.use(
  require("./routes/searchRoutes")
 );
 
+app.use(
+ "/api/cart",
+ require("./routes/cartRoutes")
+);
+
 /*
  ERROR HANDLERS
 */
