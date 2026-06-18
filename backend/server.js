@@ -79,6 +79,8 @@ app.use("/api/orders", require("./routes/orderRoutes"));
 
 app.use("/api/coupons", require("./routes/couponRoutes"));
 
+app.use("/api/dashboard", require("./routes/dashboardRoutes"));
+
 /*
  ERROR HANDLERS
 */

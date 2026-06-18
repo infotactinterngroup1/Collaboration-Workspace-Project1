@@ -78,8 +78,9 @@ const placeOrder = asyncHandler(async (req, res) => {
  DELETE CACHE
  */
 
-  await deleteCache(`cart:${userId}`);
   await deleteCache(`orders:${userId}`);
+  await deleteCache(`cart:${userId}`);
+  await deleteCache("dashboard:stats");
   await deleteCache("products:all");
   res.status(201).json(order);
 });
@@ -123,26 +124,24 @@ const getAllOrders = asyncHandler(async (req, res) => {
   res.json(orders);
 });
 
-const updateOrderStatus = asyncHandler(
-  async (req, res) => {
-    const { status } = req.body;
+const updateOrderStatus = asyncHandler(async (req, res) => {
+  const { status } = req.body;
 
-    const order = await Order.findById(req.params.id);
+  const order = await Order.findById(req.params.id);
 
-    if (!order) {
-      res.status(404);
-      throw new Error("Order not found");
-    }
+  if (!order) {
+    res.status(404);
+    throw new Error("Order not found");
+  }
 
-    order.status = status;
+  order.status = status;
 
-    await order.save();
+  await order.save();
 
-    await deleteCache(`orders:${order.user}`);
+  await deleteCache(`orders:${order.user}`);
 
-    res.json(order);
-  },
-);
+  res.json(order);
+});
 
 module.exports = {
   placeOrder,
