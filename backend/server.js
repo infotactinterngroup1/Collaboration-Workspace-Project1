@@ -5,15 +5,9 @@ const cors = require("cors");
 
 const connectDB = require("./config/db");
 
-const {
-  connectRedis,
-  redisClient,
-} = require("./config/redis");
+const { connectRedis, redisClient } = require("./config/redis");
 
-const {
-  notFound,
-  errorHandler,
-} = require("./middleware/errorMiddleware");
+const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
 const logger = require("./middleware/logger");
 
@@ -69,40 +63,21 @@ app.get("/api/cache-status", async (req, res) => {
 /*
  ROUTES
 */
-app.use(
-  "/api/products",
-  require("./routes/productRoutes")
-);
+app.use("/api/products", require("./routes/productRoutes"));
 
-app.use(
-  "/api/auth",
-  require("./routes/authRoutes")
-);
+app.use("/api/auth", require("./routes/authRoutes"));
 
-app.use(
-  "/api/analytics",
-  require("./routes/analyticsRoutes")
-);
+app.use("/api/analytics", require("./routes/analyticsRoutes"));
 
-app.use(
- "/api/cache",
- require("./routes/cacheRoutes")
-);
+app.use("/api/cache", require("./routes/cacheRoutes"));
 
-app.use(
- "/api/search",
- require("./routes/searchRoutes")
-);
+app.use("/api/search", require("./routes/searchRoutes"));
 
-app.use(
- "/api/cart",
- require("./routes/cartRoutes")
-);
+app.use("/api/cart", require("./routes/cartRoutes"));
 
-app.use(
- "/api/orders",
- require("./routes/orderRoutes")
-);
+app.use("/api/orders", require("./routes/orderRoutes"));
+
+app.use("/api/coupons", require("./routes/couponRoutes"));
 
 /*
  ERROR HANDLERS
@@ -116,7 +91,5 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(
-    `Server running on port ${PORT}`
-  );
+  console.log(`Server running on port ${PORT}`);
 });

@@ -54,107 +54,115 @@ GET CART
 GET /api/cart
 */
 
-const getCart = asyncHandler(
-  async (req, res) => {
-    const userId = req.user._id;
-    const cacheKey = `cart:${userId}`;
-    const cached = await getCache(cacheKey);
+const getCart = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const cacheKey = `cart:${userId}`;
+  const cached = await getCache(cacheKey);
 
-    if (cached) {
-      console.log("CACHE HIT -> Cart");
-      return res.json(cached);
-    }
+  if (cached) {
+    console.log("CACHE HIT -> Cart");
+    return res.json(cached);
+  }
 
-    console.log("CACHE MISS -> Cart");
+  console.log("CACHE MISS -> Cart");
 
-    const cart = await Cart.findOne({
-      user: userId,
-    })
-      .populate("products.product");
+  const cart = await Cart.findOne({
+    user: userId,
+  }).populate("products.product");
 
-    await setCache(cacheKey, cart, 300);
-    res.json(cart);
-  },
-);
+  await setCache(cacheKey, cart, 300);
+  res.json(cart);
+});
 
 /*
 DELETE CART ITEM
 DELETE /api/cart/:productId
 */
 
-const removeFromCart = asyncHandler(
-  async (req, res) => {
-    const userId = req.user._id;
-    const { productId } = req.params;
-    const cart = await Cart.findOne({
-      user: userId,
-    });
+const removeFromCart = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const { productId } = req.params;
+  const cart = await Cart.findOne({
+    user: userId,
+  });
 
-    if (!cart) {
-      res.status(404);
-      throw new Error("Cart not found");
-    }
+  if (!cart) {
+    res.status(404);
+    throw new Error("Cart not found");
+  }
 
-    cart.products = cart.products.filter(
-      (item) => item.product.toString() !== productId,
-    );
+  cart.products = cart.products.filter(
+    (item) => item.product.toString() !== productId,
+  );
 
-    await cart.save();
+  await cart.save();
 
-    await deleteCache(`cart:${userId}`);
+  await deleteCache(`cart:${userId}`);
 
-    res.json({
-      success: true,
-      cart,
-    });
-  },
-);
+  res.json({
+    success: true,
+    cart,
+  });
+});
 
 /*
 CART TOTAL
 GET /api/cart/total
 */
 
-const getCartTotal = asyncHandler(
-  async (req, res) => {
-    const userId = req.user._id;
-    const total = await Cart.aggregate([
-      {
-        $match: {
-          user: userId,
-        },
+const getCartTotal = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const total = await Cart.aggregate([
+    {
+      $match: {
+        user: userId,
       },
-      {
-        $unwind: "$products",
+    },
+    {
+      $unwind: "$products",
+    },
+    {
+      $lookup: {
+        from: "products",
+        localField: "products.product",
+        foreignField: "_id",
+        as: "product",
       },
-      {
-        $lookup: {
-          from: "products",
-          localField: "products.product",
-          foreignField: "_id",
-          as: "product",
-        },
-      },
-      {
-        $unwind: "$product",
-      },
-      {
-        $group: {
-          _id: null,
-          total: {
-            $sum: {
-              $multiply: ["$product.price", "$products.quantity"],
-            },
+    },
+    {
+      $unwind: "$product",
+    },
+    {
+      $group: {
+        _id: null,
+        total: {
+          $sum: {
+            $multiply: ["$product.price", "$products.quantity"],
           },
         },
       },
-    ]);
+    },
+  ]);
 
-    res.json({
-      total: total[0]?.total || 0,
-    });
-  },
-);
+  const cart = await Cart.findOne({
+    user: userId,
+  });
+
+  const subtotal = total[0]?.total || 0;
+
+  const discount = cart.discountPercentage;
+
+  const discountAmount = (subtotal * discount) / 100;
+
+  const finalTotal = subtotal - discountAmount;
+
+  res.json({
+    subtotal,
+    discount,
+    discountAmount,
+    finalTotal,
+  });
+});
 
 module.exports = {
   addToCart,

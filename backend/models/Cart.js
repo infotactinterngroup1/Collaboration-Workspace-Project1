@@ -20,6 +20,14 @@ const cartSchema = new mongoose.Schema(
         },
       },
     ],
+    coupon: {
+      type: String,
+      default: null,
+    },
+    discountPercentage: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
