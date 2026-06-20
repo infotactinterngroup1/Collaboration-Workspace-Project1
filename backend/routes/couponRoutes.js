@@ -6,9 +6,6 @@ const { applyCoupon } = require("../controllers/couponController");
 
 const { protect } = require("../middleware/authMiddleware");
 
-router.post("/apply",
-  protect,
-  applyCoupon,
-);
+router.post("/apply", protect, applyCoupon);
 
 module.exports = router;

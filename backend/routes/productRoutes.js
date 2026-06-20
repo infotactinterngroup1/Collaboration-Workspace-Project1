@@ -7,21 +7,16 @@ const {
   createProduct,
   updateProduct,
   deleteProduct,
-  getTrendingProducts
+  getTrendingProducts,
+  addReview,
+  getReviews,
 } = require("../controllers/productController");
 
-const {
-  protect,
-  adminOnly,
-} = require("../middleware/authMiddleware");
+const { protect, adminOnly } = require("../middleware/authMiddleware");
 
-const {
-  createProductValidation,
-} = require("../validators/productValidator");
+const { createProductValidation } = require("../validators/productValidator");
 
-const validateRequest = require(
-  "../middleware/validateRequest"
-);
+const validateRequest = require("../middleware/validateRequest");
 
 /*
  * Public Routes
@@ -31,10 +26,7 @@ const validateRequest = require(
 router.get("/", getProducts);
 
 // GET /api/products/trending
-router.get(
-  "/trending",
-  getTrendingProducts
-);
+router.get("/trending", getTrendingProducts);
 
 // GET /api/products/:id
 router.get("/:id", getProductById);
@@ -50,7 +42,7 @@ router.post(
   adminOnly,
   createProductValidation,
   validateRequest,
-  createProduct
+  createProduct,
 );
 
 // PUT /api/products/:id
@@ -60,15 +52,16 @@ router.put(
   adminOnly,
   createProductValidation,
   validateRequest,
-  updateProduct
+  updateProduct,
 );
 
 // DELETE /api/products/:id
-router.delete(
-  "/:id",
-  protect,
-  adminOnly,
-  deleteProduct
-);
+router.delete("/:id", protect, adminOnly, deleteProduct);
+
+// POST /api/products/:id/reviews
+router.post("/:id/reviews", protect, addReview);
+
+// GET /api/products/:id/reviews
+router.get("/:id/reviews", getReviews);
 
 module.exports = router;

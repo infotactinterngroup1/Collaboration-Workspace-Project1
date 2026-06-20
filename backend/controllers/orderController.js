@@ -78,7 +78,6 @@ const placeOrder = asyncHandler(async (req, res) => {
     `Order ${order._id} placed successfully`,
   );
 
-
   /*
  CLEAR CART
  */

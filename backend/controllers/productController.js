@@ -322,6 +322,77 @@ const getTrendingProducts = asyncHandler(async (req, res) => {
   res.json(products);
 });
 
+const addReview = asyncHandler(async (req, res) => {
+  const { rating, comment } = req.body;
+
+  const product = await Product.findById(req.params.id);
+
+  if (!product) {
+    res.status(404);
+    throw new Error("Product not found");
+  }
+
+  const alreadyReviewed = product.reviews.find(
+    (review) => review.user.toString() === req.user._id.toString(),
+  );
+
+  if (alreadyReviewed) {
+    res.status(400);
+    throw new Error("Product already reviewed");
+  }
+
+  const review = {
+    user: req.user._id,
+    name: req.user.name,
+    rating: Number(rating),
+    comment,
+  };
+
+  product.reviews.push(review);
+
+  product.numReviews = product.reviews.length;
+
+  product.rating =
+    product.reviews.reduce((acc, item) => acc + item.rating, 0) /
+    product.reviews.length;
+
+  await product.save();
+
+  await deleteCache(`reviews: ${req.params.id}`);
+  await deleteCache(`product: ${req.params.id}`);
+  await deleteCache("dashboard:stats");
+
+  res.status(201).json({
+    message: "Review added",
+  });
+});
+
+const getReviews = asyncHandler(async (req, res) => {
+  const cacheKey = `reviews: ${req.params.id}`;
+
+  const cached = await getCache(cacheKey);
+
+  if (cached) {
+    console.log("CACHE HIT -> Reviews");
+    return res.json(cached);
+  }
+
+  console.log("CACHE MISS -> Reviews");
+
+  const product = await Product.findById(req.params.id)
+
+    .populate("reviews.user", "name");
+
+  if (!product) {
+    res.status(404);
+    throw new Error("Product not found");
+  }
+
+  await setCache(cacheKey, product.reviews, 300);
+
+  res.json(product.reviews);
+});
+
 module.exports = {
   getProducts,
   getProductById,
@@ -329,4 +400,6 @@ module.exports = {
   updateProduct,
   deleteProduct,
   getTrendingProducts,
+  addReview,
+  getReviews,
 };
