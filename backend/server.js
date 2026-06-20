@@ -81,6 +81,10 @@ app.use("/api/coupons", require("./routes/couponRoutes"));
 
 app.use("/api/dashboard", require("./routes/dashboardRoutes"));
 
+app.use("/api/notifications", require("./routes/notificationRoutes"));
+
+app.use("/api/activity", require("./routes/activityRoutes"));
+
 /*
  ERROR HANDLERS
 */

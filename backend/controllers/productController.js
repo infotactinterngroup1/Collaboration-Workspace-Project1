@@ -1,6 +1,8 @@
 const asyncHandler = require("express-async-handler");
 
 const Product = require("../models/Product");
+const User = require("../models/User");
+const createNotification = require("../utils/createNotification");
 const generateEmbedding = require("../utils/generateEmbedding");
 const {
   getCache,
@@ -8,6 +10,7 @@ const {
   deleteCache,
   clearProductsCache,
 } = require("../utils/cache");
+const logActivity = require("../utils/logActivity");
 
 /*
  GET PRODUCTS
@@ -179,6 +182,8 @@ const createProduct = asyncHandler(async (req, res) => {
     embedding,
   });
 
+  await logActivity(req.user._id, "CREATE_PRODUCT", `${product.name} created`);
+
   /*
     CACHE INVALIDATION
   */
@@ -227,6 +232,19 @@ const updateProduct = asyncHandler(async (req, res) => {
   );
 
   const updatedProduct = await product.save();
+
+  if (product.stock < 10) {
+    const admin = await User.findOne({
+      isAdmin: true,
+    });
+    if (admin) {
+      await createNotification(
+        admin._id,
+        "Low Stock Alert",
+        `${product.name} stock is only ${product.stock}`,
+      );
+    }
+  }
 
   /*
    CACHE INVALIDATION

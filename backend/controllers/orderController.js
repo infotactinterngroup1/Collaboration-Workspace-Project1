@@ -4,6 +4,9 @@ const Cart = require("../models/Cart");
 
 const Order = require("../models/Order");
 
+const createNotification = require("../utils/createNotification");
+const logActivity = require("../utils/logActivity");
+
 const Product = require("../models/Product");
 
 const { getCache, setCache, deleteCache } = require("../utils/cache");
@@ -66,6 +69,15 @@ const placeOrder = asyncHandler(async (req, res) => {
     discount,
     totalAmount: finalTotal,
   });
+
+  await logActivity(userId, "PLACE_ORDER", `Order ${order._id} created`);
+
+  await createNotification(
+    userId,
+    "Order Placed",
+    `Order ${order._id} placed successfully`,
+  );
+
 
   /*
  CLEAR CART
