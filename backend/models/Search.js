@@ -15,10 +15,7 @@ const searchSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-module.exports = mongoose.model(
-  "Search",
-  searchSchema
-);
+module.exports = mongoose.model("Search", searchSchema);

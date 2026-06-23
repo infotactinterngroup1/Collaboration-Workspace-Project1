@@ -7,8 +7,6 @@ const Order = require("../models/Order");
 const createNotification = require("../utils/createNotification");
 const logActivity = require("../utils/logActivity");
 
-const Product = require("../models/Product");
-
 const { getCache, setCache, deleteCache } = require("../utils/cache");
 
 const placeOrder = asyncHandler(async (req, res) => {
