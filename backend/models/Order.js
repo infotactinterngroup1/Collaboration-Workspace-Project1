@@ -32,13 +32,18 @@ const orderSchema = new mongoose.Schema(
       enum: ["Pending", "Confirmed", "Shipped", "Delivered"],
       default: "Pending",
     },
+    coupon: {
+      type: String,
+      default: null,
+    },
+    discount: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
   },
 );
 
-module.exports = mongoose.model(
-  "Order",
-  orderSchema,
-);
+module.exports = mongoose.model("Order", orderSchema);

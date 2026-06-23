@@ -2,10 +2,10 @@ const express = require("express");
 
 const router = express.Router();
 
-const { clearCache } = require("../controllers/cacheController");
+const { getActivities } = require("../controllers/activityController");
 
 const { protect, adminOnly } = require("../middleware/authMiddleware");
 
-router.delete("/", protect, adminOnly, clearCache);
+router.get("/", protect, adminOnly, getActivities);
 
 module.exports = router;

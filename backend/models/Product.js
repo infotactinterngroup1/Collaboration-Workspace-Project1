@@ -4,42 +4,72 @@ const productSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true
+      required: true,
     },
 
     description: {
-      type: String
+      type: String,
     },
 
     category: {
-      type: String
+      type: String,
     },
 
     price: {
       type: Number,
-      required: true
+      required: true,
     },
 
     stock: {
       type: Number,
-      default: 0
+      default: 0,
     },
 
     image: {
-      type: String
+      type: String,
     },
 
     embedding: {
       type: [Number],
-      default: []
-    }
+      default: [],
+    },
+
+    rating: {
+      type: Number,
+      default: 0,
+    },
+
+    numReviews: {
+      type: Number,
+      default: 0,
+    },
+
+    reviews: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+
+        name: {
+          type: String,
+        },
+
+        rating: {
+          type: Number,
+          required: true,
+        },
+
+        comment: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
   },
   {
-    timestamps: true
-  }
+    timestamps: true,
+  },
 );
 
-module.exports = mongoose.model(
-  "Product",
-  productSchema
-);
+module.exports = mongoose.model("Product", productSchema);
