@@ -68,11 +68,7 @@ const semanticSearch = asyncHandler(async (req, res) => {
       CACHE SEARCH RESULTS
     */
 
-  await setCache(
-    cacheKey,
-    products,
-    300,
-  );
+  await setCache(cacheKey, products, 300);
 
   /*
       SAVE SEARCH HISTORY
@@ -114,50 +110,45 @@ GET /api/search/trending
 
 */
 
-const getTrendingSearches = asyncHandler(
-  async (
-    req,
-    res,
-  ) => {
-    const cacheKey = "search:trending";
+const getTrendingSearches = asyncHandler(async (req, res) => {
+  const cacheKey = "search:trending";
 
-    /*
+  /*
       CHECK REDIS
     */
 
-    const cached = await getCache(cacheKey);
+  const cached = await getCache(cacheKey);
 
-    if (cached) {
-      console.log("CACHE HIT -> Trending Searches");
+  if (cached) {
+    console.log("CACHE HIT -> Trending Searches");
 
-      return res.json(cached);
-    }
+    return res.json(cached);
+  }
 
-    console.log("CACHE MISS -> Trending Searches");
+  console.log("CACHE MISS -> Trending Searches");
 
-    const searches = await Search.find()
+  const searches = await Search.find()
 
-      .sort({
-        count: -1,
-      })
+    .sort({
+      count: -1,
+    })
 
-      .limit(10);
+    .limit(10);
 
-    /*
+  /*
       CACHE TRENDING SEARCHES
     */
 
-    await setCache(
-      cacheKey,
+  await setCache(
+    cacheKey,
 
-      searches,
+    searches,
 
-      300,
-    );
+    300,
+  );
 
-    res.json(searches);
-  },
-);
+  res.json(searches);
+});
 
 module.exports = {
   semanticSearch,

@@ -1,72 +1,35 @@
 const jwt = require("jsonwebtoken");
 
-const User =
-require("../models/User");
+const User = require("../models/User");
 
-const asyncHandler =
-require("express-async-handler");
+const asyncHandler = require("express-async-handler");
 
-const protect =
-asyncHandler(async (
-  req,
-  res,
-  next
-) => {
-
+const protect = asyncHandler(async (req, res, next) => {
   let token;
-
   if (
     req.headers.authorization &&
-    req.headers.authorization.startsWith(
-      "Bearer"
-    )
+    req.headers.authorization.startsWith("Bearer")
   ) {
-    token =
-      req.headers.authorization.split(
-        " "
-      )[1];
-
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET
-    );
-
-    req.user =
-      await User.findById(
-        decoded.id
-      ).select("-password");
-
+    token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = await User.findById(decoded.id).select("-password");
     next();
   } else {
     res.status(401);
-
-    throw new Error(
-      "Not authorized"
-    );
+    throw new Error("Not authorized");
   }
 });
 
-const adminOnly = (
-  req,
-  res,
-  next
-) => {
-
-  if (
-    req.user &&
-    req.user.role === "admin"
-  ) {
+const adminOnly = (req, res, next) => {
+  if (req.user && req.user.role === "admin") {
     next();
   } else {
     res.status(403);
-
-    throw new Error(
-      "Admin access only"
-    );
+    throw new Error("Admin access only");
   }
 };
 
 module.exports = {
   protect,
-  adminOnly
+  adminOnly,
 };
