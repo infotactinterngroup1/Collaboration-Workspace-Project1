@@ -1,15 +1,16 @@
 require("dotenv").config();
-
+require("./utils/checkEnv");
 const express = require("express");
 const cors = require("cors");
-
 const connectDB = require("./config/db");
-
 const { connectRedis, redisClient } = require("./config/redis");
 
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
 const logger = require("./middleware/logger");
+
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./config/swagger");
 
 const app = express();
 
@@ -60,6 +61,13 @@ app.get("/api/cache-status", async (req, res) => {
   }
 });
 
+app.get("/", (req, res) => {
+  res.json({
+    message: "E-Commerce API Running",
+    docs: "/api-docs",
+  });
+});
+
 /*
  ROUTES
 */
@@ -84,6 +92,29 @@ app.use("/api/dashboard", require("./routes/dashboardRoutes"));
 app.use("/api/notifications", require("./routes/notificationRoutes"));
 
 app.use("/api/activity", require("./routes/activityRoutes"));
+
+app.use("/api/health", require("./routes/healthRoutes"));
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+/*
+ API DOCUMENTATION INFO
+*/
+
+app.get("/api-docs-info", (req, res) => {
+  res.json({
+    apis: [
+      "GET /api/products",
+      "GET /api/products/:id",
+      "POST /api/auth/register",
+      "POST /api/auth/login",
+      "POST /api/orders",
+      "GET /api/dashboard/stats",
+      "GET /api/cart",
+      "POST /api/coupons/apply",
+    ],
+  });
+});
 
 /*
  ERROR HANDLERS

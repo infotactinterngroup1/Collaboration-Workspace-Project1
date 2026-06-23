@@ -23,12 +23,40 @@ const validateRequest = require("../middleware/validateRequest");
  */
 
 // GET /api/products
+/**
+ * @swagger
+ * /api/products:
+ *   get:
+ *     summary: Get all products
+ *     tags:
+ *       - Products
+ *     responses:
+ *       200:
+ *         description: Products fetched successfully
+ */
 router.get("/", getProducts);
 
 // GET /api/products/trending
 router.get("/trending", getTrendingProducts);
 
 // GET /api/products/:id
+/**
+ * @swagger
+ * /api/products/{id}:
+ *   get:
+ *     summary: Get product by ID
+ *     tags:
+ *       - Products
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Product fetched successfully
+ */
 router.get("/:id", getProductById);
 
 /*
