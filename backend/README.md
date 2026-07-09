@@ -105,6 +105,7 @@ backend/
 ├── routes/
 ├── seed/
 ├── utils/
+├── validators/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml
@@ -120,7 +121,7 @@ backend/
 Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/infotactinterngroup1/Collaboration-Workspace-Project1/tree/main
 ```
 
 Go to backend folder
